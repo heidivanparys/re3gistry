@@ -48,7 +48,7 @@ import java.util.concurrent.Future;
 
 public class CacheAllServlet extends HttpServlet {
 
-    private static final Logger LOG = LogManager.getLogger(CacheServlet.class.getName());
+    private static final Logger LOG = LogManager.getLogger(CacheAllServlet.class.getName());
     private static final long serialVersionUID = 1L;
 
     private EntityManagerFactory emf;
@@ -60,9 +60,8 @@ public class CacheAllServlet extends HttpServlet {
         try {
             this.emf = PersistenceFactory.getEntityManagerFactory();
             this.cache = (ItemCache) config.getServletContext().getAttribute(CacheServlet.ATTRIBUTE_CACHE_KEY);
-            this.logger = LogManager.getLogger("Re3gistry2");
         } catch (Exception e) {
-            this.logger.error("Unexpected exception occured: cannot load the configuration system", e);
+            LOG.error("Unexpected exception occured: cannot load the configuration system", e);
         }
     }
 
@@ -78,7 +77,7 @@ public class CacheAllServlet extends HttpServlet {
             ExecutorService executor = Executors.newFixedThreadPool(availableLanguages.size());
 
             for (RegLanguagecode languageCode : availableLanguages) {
-                Future result = executor.submit(new CacheAll(this.emf, this.cache, this.logger, languageCode));
+                Future result = executor.submit(new CacheAll(this.emf, this.cache, languageCode));
             }
             executor.shutdown();
         } catch (Exception e) {
