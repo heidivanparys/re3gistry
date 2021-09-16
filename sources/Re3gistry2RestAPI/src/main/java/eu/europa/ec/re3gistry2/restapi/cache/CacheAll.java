@@ -13,6 +13,7 @@ import eu.europa.ec.re3gistry2.crudimplementation.RegLocalizationhistoryManager;
 import eu.europa.ec.re3gistry2.model.RegItem;
 import eu.europa.ec.re3gistry2.model.RegItemclass;
 import eu.europa.ec.re3gistry2.model.RegLanguagecode;
+import eu.europa.ec.re3gistry2.restapi.CacheAllServlet;
 import eu.europa.ec.re3gistry2.restapi.ItemHistorySupplier;
 import eu.europa.ec.re3gistry2.restapi.ItemSupplier;
 import eu.europa.ec.re3gistry2.restapi.model.Item;
@@ -21,23 +22,21 @@ import java.util.List;
 import java.util.Optional;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class CacheAll implements Runnable {
 
+    private static final Logger LOG = LogManager.getLogger(CacheAll.class.getName());
     private EntityManagerFactory emf;
     private ItemCache cache;
-    private Logger logger;
     private RegLanguagecode languageCode;
 
-    public CacheAll(EntityManagerFactory emf, ItemCache cache, Logger logger, RegLanguagecode languageCode) {
-        try {
-            this.emf = emf;
-            this.cache = cache;
-            this.logger = logger;
-            this.languageCode = languageCode;
-        } catch (Exception ex) {
-        }
+    public CacheAll(EntityManagerFactory emf, ItemCache cache, RegLanguagecode languageCode) {
+        this.emf = emf;
+        this.cache = cache;
+        this.languageCode = languageCode;
     }
 
     @Override
@@ -52,7 +51,7 @@ public class CacheAll implements Runnable {
             RegItemManager regItemManager = new RegItemManager(em);
             RegItemclassManager regItemclassManager = new RegItemclassManager(em);
 
-            this.logger.info("---[ STARTING CACHE ALL]--- @ " + new Date());
+            LOG.info("---[ STARTING CACHE ALL]--- @ " + new Date());
             System.out.println("---[ STARTING CACHE ALL]--- @ " + new Date());
 
             RegLanguagecode masterLanguage = languageManager.getMasterLanguage();
@@ -64,7 +63,7 @@ public class CacheAll implements Runnable {
             // Iterating on each ItemClasses
             for (RegItemclass regItemclass : itemclassList) {
                 try {
-                    this.logger.info("CACHE ALL - regItemClass: " + regItemclass.getLocalid() + " - @ " + new Date());
+                    LOG.info("CACHE ALL - regItemClass: " + regItemclass.getLocalid() + " - @ " + new Date());
                     System.out.println("CACHE ALL - regItemClass: " + regItemclass.getLocalid() + " - @ " + new Date());
 
                     // Getting all the RegItems by ItemClass
@@ -74,11 +73,11 @@ public class CacheAll implements Runnable {
                     for (RegItem regItem : regitemList) {
 
                         try {
-                            //this.logger.info("CACHE ALL - regItem: " + regItem.getLocalid() + " - @ " + new Date());
+                            //LOG.info("CACHE ALL - regItem: " + regItem.getLocalid() + " - @ " + new Date());
                             //System.out.println("CACHE ALL - regItem: " + regItem.getLocalid() + " - @ " + new Date());
                             // Iterating on all the available languages
                             //for (RegLanguagecode languageCode : availableLanguages) {
-                            this.logger.info("CACHE ALL - regItemClass: " + regItemclass.getLocalid() + " - regItem: " + regItem.getLocalid() + ", language: " + languageCode.getIso6391code() + " - @ " + new Date());
+                            LOG.info("CACHE ALL - regItemClass: " + regItemclass.getLocalid() + " - regItem: " + regItem.getLocalid() + ", language: " + languageCode.getIso6391code() + " - @ " + new Date());
                             System.out.println("CACHE ALL - regItemClass: " + regItemclass.getLocalid() + " - regItem: " + regItem.getLocalid() + ", language: " + languageCode.getIso6391code() + " - @ " + new Date());
 
                             ItemSupplier itemSupplier = new ItemSupplier(em, masterLanguage, languageCode);
@@ -93,7 +92,7 @@ public class CacheAll implements Runnable {
                                 em.getTransaction().begin();
                             }
 
-                            this.logger.info("DB Connection problem, trying to reconnect - " + e.getMessage());
+                            LOG.info("DB Connection problem, trying to reconnect - " + e.getMessage());
                             System.out.println("DB Connection problem, trying to reconnect - " + e.getMessage());
                         }
                     }
@@ -102,13 +101,13 @@ public class CacheAll implements Runnable {
                     //List<RegItemhistory> regitemHistoryList = regItemhistoryManager.getByRegItemClass(regItemclass);
                     // Iterating on RegItemHistory
                     //for (RegItemhistory regItemhistory : regitemHistoryList) {
-                    //this.logger.info("CACHE ALL - regItemhistory: " + regItemhistory.getLocalid() + " - @ " + new Date());
+                    //LOG.info("CACHE ALL - regItemhistory: " + regItemhistory.getLocalid() + " - @ " + new Date());
                     //System.out.println("CACHE ALL - regItemhistory: " + regItemhistory.getLocalid() + " - @ " + new Date());
                     // Iterating on all the available languages
                     //List<RegLocalizationhistory> localizationHistoryListForRegItem = regLocalizationhistoryManager.getAll(regItemhistory);
                     //for (RegLocalizationhistory regLocalizationhistory : localizationHistoryListForRegItem) {
                     //RegLanguagecode languageCode = regLocalizationhistory.getRegLanguagecode();
-                    //this.logger.info("CACHE ALL - regItemhistory: " + regItemhistory.getLocalid() + ", language: " + languageCode.getIso6391code() + " - @ " + new Date());
+                    //LOG.info("CACHE ALL - regItemhistory: " + regItemhistory.getLocalid() + ", language: " + languageCode.getIso6391code() + " - @ " + new Date());
                     //System.out.println("CACHE ALL - regItemhistory: " + regItemhistory.getLocalid() + ", language: " + languageCode.getIso6391code() + " - @ " + new Date());
                     //ItemHistorySupplier itemHistorySupplier = new ItemHistorySupplier(em, masterLanguage, languageCode);
                     //Optional<Item> optItem = getItemHistoryByUuid(regItemhistory.getUuid(), languageCode.getIso6391code(), itemHistorySupplier);
@@ -122,16 +121,16 @@ public class CacheAll implements Runnable {
                         em.getTransaction().begin();
                     }
 
-                    this.logger.info("DB Connection problem, trying to reconnect - " + e.getMessage());
+                    LOG.info("DB Connection problem, trying to reconnect - " + e.getMessage());
                     System.out.println("DB Connection problem, trying to reconnect - " + e.getMessage());
                 }
             }
 
-            this.logger.info("END CACHE ALL @ " + new Date());
+            LOG.info("END CACHE ALL @ " + new Date());
             System.out.println("END CACHE ALL @ " + new Date());
 
         } catch (Exception e) {
-            this.logger.error("Unexpected exception occured", e);
+            LOG.error("Unexpected exception occured", e);
             //ResponseUtil.err(resp, ApiError.INTERNAL_SERVER_ERROR);
         } finally {
             if (em != null) {
