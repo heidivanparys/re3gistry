@@ -15,7 +15,7 @@
         <persistence.transactiontpye>RESOURCE_LOCAL</persistence.transactiontpye>        
         <persistence.jdbc.driver>org.postgresql.Driver</persistence.jdbc.driver>
         <persistence.jdbc.datasource>org.postgresql.jdbc2.optional.SimpleDataSource</persistence.jdbc.datasource>
-        <persistence.eclipselink.ddl-generation>create-tables</persistence.eclipselink.ddl-generation>
+        <persistence.eclipselink.ddl-generation>none</persistence.eclipselink.ddl-generation>
         <persistence.dependency.postgres.version>9.4.1212</persistence.dependency.postgres.version>
         <analytics.id></analytics.id>
         <analytics.url></analytics.url>
