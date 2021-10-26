@@ -191,7 +191,7 @@ public class Install extends HttpServlet {
             }
 
         } catch (IOException ex) {
-            Configuration.getInstance().getLogger().error("Error while trying to create the system installing file", e);
+            Configuration.getInstance().getLogger().error("Error while trying to create the system installing file", ex);
             throw new Exception(ex.getMessage());
         }
     }
