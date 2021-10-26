@@ -78,7 +78,7 @@ public class UserHelper {
         if (em != null) {
             //Init variables
             String loginType = configuration.getProperties().getProperty(BaseConstants.KEY_PROPERTY_LOGIN_TYPE, BaseConstants.KEY_PROPERTY_LOGIN_TYPE_SHIRO);
-            Configuration.getInstance().getLogger().trace("loginType=" + loginType);
+            logger.trace("loginType=" + loginType);
             RegUserManager regUserManager = new RegUserManager(em);
 
             //Checking the Re3gistry2 user in session (user from ecas remapped in Re3gistry user).

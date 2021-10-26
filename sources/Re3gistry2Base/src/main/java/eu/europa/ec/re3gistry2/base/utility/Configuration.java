@@ -115,7 +115,6 @@ public class Configuration {
             String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
 
             File f = new File(propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SYSTEMINSTALLED);
-            Configuration.getInstance().getLogger().trace("Checking for existence of file " + f.getAbsolutePath());
             if (f.exists() && !f.isDirectory()) {
                 installed = true;
             }
@@ -123,7 +122,6 @@ public class Configuration {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        Configuration.getInstance().getLogger().trace("Exists and no directory? " + installed);
         return installed;
     }
 
@@ -133,7 +131,6 @@ public class Configuration {
             String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
 
             File f = new File(propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SYSTEMINSTALLING);
-            Configuration.getInstance().getLogger().trace("Checking for existence of file " + f.getAbsolutePath());
             if (f.exists() && !f.isDirectory()) {
                 installing = true;
             }
@@ -141,7 +138,6 @@ public class Configuration {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        Configuration.getInstance().getLogger().trace("Exists and no directory? " + installing);
         return installing;
     }
 
@@ -163,12 +159,8 @@ public class Configuration {
     }
 
     public void initServlet(HttpServletRequest request, HttpServletResponse response, boolean fromInstall, boolean fromInstalling) throws ServletException, IOException {
-        Configuration.getInstance().getLogger().trace("Start initialising servlet");
+        Configuration.getInstance().getLogger().debug("Start initialising servlet");
         //Check installation
-        Configuration.getInstance().getLogger().trace("checkInstallation()=" + checkInstallation());
-        Configuration.getInstance().getLogger().trace("checkInstallRunning()=" + checkInstallRunning());
-        Configuration.getInstance().getLogger().trace("fromInstall=" + fromInstall);
-        Configuration.getInstance().getLogger().trace("fromInstalling=" + fromInstalling);
 
         // If the system is installed and the user tries to access the 
         // installation, he is redirected to the login
@@ -185,17 +177,20 @@ public class Configuration {
           Configuration.getInstance().getLogger().trace("Redirecting to " + "." + WebConstants.PAGE_URINAME_INSTALL);
             response.sendRedirect("." + WebConstants.PAGE_URINAME_INSTALL);
         } else {
-            Configuration.getInstance().getLogger().trace("Not redirecting but proceeding");
+            Configuration.getInstance().getLogger().debug("Proceed initialising servlet");
           
             //Init properties
+            Configuration.getInstance().getLogger().trace("Initialise properties");
             Properties prop = Configuration.getInstance().getProperties();
             request.setAttribute(BaseConstants.KEY_REQUEST_PROPERTIES, prop);
 
             //Init Localization
+            Configuration.getInstance().getLogger().trace("Initialise localisation");
             ResourceBundle loc = Configuration.getInstance().getLocalization();
             request.setAttribute(BaseConstants.KEY_REQUEST_LOCALIZATION, loc);
 
             //Init available languages in the session if needed
+            Configuration.getInstance().getLogger().trace("Initialise available languages in session if needed");
             if (request.getSession().getAttribute(BaseConstants.KEY_SESSION_AVAILABLELANGUAGES) == null) {
                 List<Localization> availableLanguages = new ArrayList<>(LocalizationMgr.getAvailableLanguages());
                 request.getSession().setAttribute(BaseConstants.KEY_SESSION_AVAILABLELANGUAGES, availableLanguages);
@@ -215,12 +210,15 @@ public class Configuration {
             RegUser regUser = (RegUser) session.getAttribute(BaseConstants.KEY_SESSION_USER);
 
             if (regUser == null) {
+                Configuration.getInstance().getLogger().debug("Check user");
                 regUser = UserHelper.checkUser(request);
             }
 
             if (regUser != null) {
+                Configuration.getInstance().getLogger().debug("User:" + regUser.getName());
                 request.setAttribute(BaseConstants.KEY_REQUEST_REGUSER, regUser);
             } else {
+                Configuration.getInstance().getLogger().debug("No user found");
                 if (!fromInstall && !fromInstalling) {
                     request.setAttribute(BaseConstants.KEY_REQUEST_REGUSER, null);
                     //request.getRequestDispatcher("/jsp/login.jsp").forward(request, response);

@@ -54,7 +54,7 @@ public class ValidateSalt implements Filter {
         // Get the salt sent with the request
         String salt = (String) httpReq.getParameter(BaseConstants.KEY_REQUEST_CSRF_PREVENTIONSALT);
 
-        // Validate that the salt is in the cache
+        Configuration.getInstance().getLogger().debug("Validating that the salt is in the cache");
         Cache<String, Boolean> csrfPreventionSaltCache = (Cache<String, Boolean>)
             httpReq.getSession().getAttribute(BaseConstants.KEY_REQUEST_CSRF_PREVENTIONSALTCACHE);
 
@@ -62,17 +62,19 @@ public class ValidateSalt implements Filter {
                 salt != null &&
                 csrfPreventionSaltCache.getIfPresent(salt) != null){
 
-            // If the salt is in the cache, we move on
+            Configuration.getInstance().getLogger().debug("Salt is in cache, thus moving on");
             chain.doFilter(request, response);
         } else {
             // Otherwise we throw an exception aborting the request flow
             if(httpReq.getMethod().equals("POST")){
+                Configuration.getInstance().getLogger().debug("Salt is not in cache, and HTTP method is  POST, thus potential CSRF");
                 request.setAttribute(BaseConstants.KEY_REQUEST_CSRF_PREVENTION_ERROR, BaseConstants.KEY_BOOLEAN_STRING_TRUE);
                 request.getRequestDispatcher(WebConstants.PAGE_JSP_FOLDER + WebConstants.PAGE_PATH_INDEX + WebConstants.PAGE_URINAME_INDEX + WebConstants.PAGE_JSP_EXTENSION).forward(request, response);
                 Logger logger = Configuration.getInstance().getLogger();
                 logger.error("Potential CSRF detected");
                 //throw new ServletException("Potential CSRF detected");
-            }else{
+              }else{
+                Configuration.getInstance().getLogger().debug("Salt is not in cache, but HTTP method is not POST, thus moving on");
                 chain.doFilter(request, response);
             }
         }
