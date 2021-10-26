@@ -50,6 +50,7 @@ import org.apache.logging.log4j.Logger;
 public class Install extends HttpServlet {
 
     private void processRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Configuration.getInstance().getLogger().trace("Start processing request in " + Install.class.getName());
 
         // Init frontend servlet
         Configuration.getInstance().initServlet(request, response, true, false);
@@ -67,6 +68,8 @@ public class Install extends HttpServlet {
         if (step == null || step.length() < 1) {
             step = "1";
         }
+        
+        Configuration.getInstance().getLogger().debug("install step = " + step);
 
         if (step.equals("2")) {
             request.setAttribute(BaseConstants.KEY_REQUEST_INSTALLATION_ADMIN_USER_ERROR, BaseConstants.KEY_REQUEST_USER_CREATION_STARTED);
@@ -89,11 +92,14 @@ public class Install extends HttpServlet {
             try {
                 new RegInstallationStepCleanInstallationSummaryHandler(request);
             } catch (Exception ex) {
+                Configuration.getInstance().getLogger().error(ex.getMessage(), ex);
                 step = BaseConstants.KEY_REQUEST_CLEAN_INSTALLATION_SUMMARY;
                 request.setAttribute(BaseConstants.KEY_REQUEST_INSTALLATION_CLEAN_DB_ERROR, ex.getMessage());
+                
             }
         }
         if (step.equals(BaseConstants.KEY_REQUEST_CLEAN_INSTALLATION_PROCESS)) {
+            Configuration.getInstance().getLogger().info("Start clean installation");
             try {
                 createSystemInstallingFile();
                 new RegInstallationStepCleanInstallationProcessHandler(request, entityManagerRe3gistry2);
@@ -104,7 +110,9 @@ public class Install extends HttpServlet {
                     session.setAttribute(BaseConstants.KEY_REQUEST_INSTALLATION_SUCCESS, BaseConstants.KEY_REQUEST_INSTALLATION_SUCCESS);
                 }
                 request.setAttribute(BaseConstants.KEY_REQUEST_INSTALLATION_SUCCESS, BaseConstants.KEY_REQUEST_INSTALLATION_SUCCESS);
+                Configuration.getInstance().getLogger().info("Installation succeeded");
             } catch (Exception ex) {
+                Configuration.getInstance().getLogger().error("Exception occurred in step " + BaseConstants.KEY_REQUEST_CLEAN_INSTALLATION_PROCESS, ex);
                 step = "3";
                 deleteSystemInstallingFile();
                 request.setAttribute(BaseConstants.KEY_REQUEST_INSTALLATION_CLEAN_DB_ERROR, ex.getMessage());
@@ -115,6 +123,7 @@ public class Install extends HttpServlet {
             try {
                 new RegInstallationStepMigrationSummaryHandler(request, entityManagerRe3gistry2);
             } catch (Exception ex) {
+                Configuration.getInstance().getLogger().error("Exception occurred in step " + BaseConstants.KEY_REQUEST_MIGRATION_SUMMARY, ex);
                 step = "3";
                 request.setAttribute(BaseConstants.KEY_REQUEST_INSTALLATION_MIGRATION_ERROR, ex.getMessage());
             }
@@ -131,6 +140,7 @@ public class Install extends HttpServlet {
                     session.setAttribute(BaseConstants.KEY_REQUEST_INSTALLATION_SUCCESS, BaseConstants.KEY_REQUEST_INSTALLATION_SUCCESS);
                 }
             } catch (Exception ex) {
+                Configuration.getInstance().getLogger().error("Exception occurred in step " + BaseConstants.KEY_REQUEST_MIGRATION_PROCESS, ex);
                 step = "3";
                 deleteSystemInstallingFile();
                 request.setAttribute(BaseConstants.KEY_REQUEST_INSTALLATION_MIGRATION_ERROR, ex.getMessage());
@@ -168,19 +178,20 @@ public class Install extends HttpServlet {
 
     private void createSystemInstallingFile() throws Exception {
         String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
-        String systemInstalledPath = propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SYSTEMINSTALLING;
-        File systemInstalledFile = new File(systemInstalledPath);
+        String systemInstallingPath = propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SYSTEMINSTALLING;
+        File systemInstallingFile = new File(systemInstallingPath);
 
-        systemInstalledFile.getParentFile().mkdirs();
+        systemInstallingFile.getParentFile().mkdirs();
         try {
 
-            boolean success = systemInstalledFile.createNewFile();
+            boolean success = systemInstallingFile.createNewFile();
 
             if (!success) {
                 throw new IOException();
             }
 
         } catch (IOException ex) {
+            Configuration.getInstance().getLogger().error("Error while trying to create the system installing file", e);
             throw new Exception(ex.getMessage());
         }
     }
@@ -194,6 +205,7 @@ public class Install extends HttpServlet {
         try {
             success = file.delete();
         } catch (Exception e) {
+          Configuration.getInstance().getLogger().error("Error while trying to delete the system installing file", e);
         }
 
 //        if (!success) {
@@ -215,6 +227,7 @@ public class Install extends HttpServlet {
             }
 
         } catch (IOException ex) {
+            Configuration.getInstance().getLogger().error("Error while trying to create the system installed file", ex);
             throw new Exception(ex.getMessage());
         }
     }

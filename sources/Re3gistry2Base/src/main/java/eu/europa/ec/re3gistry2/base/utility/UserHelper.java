@@ -78,6 +78,7 @@ public class UserHelper {
         if (em != null) {
             //Init variables
             String loginType = configuration.getProperties().getProperty(BaseConstants.KEY_PROPERTY_LOGIN_TYPE, BaseConstants.KEY_PROPERTY_LOGIN_TYPE_SHIRO);
+            Configuration.getInstance().getLogger().trace("loginType=" + loginType);
             RegUserManager regUserManager = new RegUserManager(em);
 
             //Checking the Re3gistry2 user in session (user from ecas remapped in Re3gistry user).
@@ -196,6 +197,7 @@ public class UserHelper {
     // login
     public static boolean tryLoginWithSHIRO(String username, String password, Boolean rememberMe, HttpServletRequest request) {
         // get the currently executing user:
+      Configuration.getInstance().getLogger().trace("Try login with SHIRO");
         org.apache.shiro.subject.Subject currentUser = SecurityUtils.getSubject();
 
         if (!currentUser.isAuthenticated()) {
@@ -212,6 +214,7 @@ public class UserHelper {
 
                 // save current username in the session, so we have access to our User model
                 currentUser.getSession().setAttribute(BaseConstants.KEY_FORM_FIELD_NAME_USERNAME, username);
+                Configuration.getInstance().getLogger().trace("Login successful");
                 return true;
             } catch (UnknownAccountException uae) {
                 request.setAttribute(BaseConstants.KEY_REQUEST_USER_ERROR_MESSAGES, BaseConstants.KEY_REQUEST_USER_UNKNOWN_ACCOUNT_EXCEPTION);
@@ -221,8 +224,10 @@ public class UserHelper {
                 request.setAttribute(BaseConstants.KEY_REQUEST_USER_ERROR_MESSAGES, BaseConstants.KEY_REQUEST_USER_LOCKED_ACCOUNT_EXCEPTION);
             }
         } else {
+          Configuration.getInstance().getLogger().trace("User already logged in");
             return true; // already logged in
         }
+        Configuration.getInstance().getLogger().trace("Login unsuccessfull");
         return false;
     }
 

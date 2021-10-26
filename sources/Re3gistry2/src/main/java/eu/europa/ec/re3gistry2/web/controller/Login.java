@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 public class Login extends HttpServlet {
 
     private void processRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+      Configuration.getInstance().getLogger().trace("Start processing request in " + Login.class.getName());
         //Init frontend servlet
         Configuration.getInstance().initServlet(request, response, false, false);
 
