@@ -130,7 +130,7 @@
     
     <!--END ECAS authentication configs-->
     
-    <!--SHIRO authentication configs-->
+    <!--SHIRO authentication configs, see also https://shiro.apache.org/web.html#web-xml-->
     <listener>
         <listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
     </listener>
