@@ -47,12 +47,13 @@ public class ValidateSalt implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
+        Configuration.getInstance().getLogger().trace("Start filter " + ValidateSalt.class.getName());
 
         // Assume its HTTP
         HttpServletRequest httpReq = (HttpServletRequest) request;
 
         // Get the salt sent with the request
-        String salt = (String) httpReq.getParameter(BaseConstants.KEY_REQUEST_CSRF_PREVENTIONSALT);
+        String salt = (String) httpReq.getAttribute(BaseConstants.KEY_REQUEST_CSRF_PREVENTIONSALT);
 
         Configuration.getInstance().getLogger().debug("Validating that the salt is in the cache");
         Cache<String, Boolean> csrfPreventionSaltCache = (Cache<String, Boolean>)
@@ -67,7 +68,7 @@ public class ValidateSalt implements Filter {
         } else {
             // Otherwise we throw an exception aborting the request flow
             if(httpReq.getMethod().equals("POST")){
-                Configuration.getInstance().getLogger().debug("Salt is not in cache, and HTTP method is  POST, thus potential CSRF");
+                Configuration.getInstance().getLogger().debug("Salt is not in cache, and HTTP method is POST, thus potential CSRF");
                 request.setAttribute(BaseConstants.KEY_REQUEST_CSRF_PREVENTION_ERROR, BaseConstants.KEY_BOOLEAN_STRING_TRUE);
                 request.getRequestDispatcher(WebConstants.PAGE_JSP_FOLDER + WebConstants.PAGE_PATH_INDEX + WebConstants.PAGE_URINAME_INDEX + WebConstants.PAGE_JSP_EXTENSION).forward(request, response);
                 Logger logger = Configuration.getInstance().getLogger();
