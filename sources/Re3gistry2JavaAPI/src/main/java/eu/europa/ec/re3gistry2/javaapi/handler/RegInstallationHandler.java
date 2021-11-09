@@ -597,7 +597,9 @@ public class RegInstallationHandler {
         try {
             RegUserManager regUserManager = new RegUserManager(entityManagerRe3gistry2);
             adminRegUser = regUserManager.findByEmail(email);
+            logger.debug("Administrator user " + adminRegUser + " found");
         } catch (Exception exx) {
+            logger.debug("Creating new administrator user");
             adminRegUser = new RegUser();
 
             adminRegUser.setUuid(RegUserUuidHelper.getUuid(email));
@@ -617,6 +619,7 @@ public class RegInstallationHandler {
             if (loginType.equals(BaseConstants.KEY_PROPERTY_LOGIN_TYPE_SHIRO) && key != null) {
                 UserHelper.generatePassword(adminRegUser, key);
             }
+            logger.debug("Administrator user " + adminRegUser + " created");
 
             try {
                 if (!entityManagerRe3gistry2.getTransaction().isActive()) {
@@ -625,9 +628,11 @@ public class RegInstallationHandler {
                 entityManagerRe3gistry2.persist(adminRegUser);
                 if (commit) {
                     entityManagerRe3gistry2.getTransaction().commit();
+                    logger.debug("Administrator user " + adminRegUser + " persisted and committed");
                 }
             } catch (Exception ex) {
                 adminRegUser = null;
+                logger.error("Error occurred, set administrator user to null: " + ex.getMessage(), ex);
                 throw new Exception(ex.getMessage());
             }
         }

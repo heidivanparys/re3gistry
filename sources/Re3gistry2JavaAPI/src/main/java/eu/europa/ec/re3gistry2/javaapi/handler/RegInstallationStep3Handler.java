@@ -24,6 +24,7 @@
 package eu.europa.ec.re3gistry2.javaapi.handler;
 
 import eu.europa.ec.re3gistry2.base.utility.BaseConstants;
+import eu.europa.ec.re3gistry2.base.utility.Configuration;
 import eu.europa.ec.re3gistry2.model.RegUser;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
@@ -53,13 +54,14 @@ public class RegInstallationStep3Handler {
         boolean commit = true;
         RegInstallationHandler regInstallationHandler = new RegInstallationHandler(entityManagerRe3gistry2);
         RegUser adminUser = regInstallationHandler.createRegUser(adminUsename, adminPassword, commit, true);
+        
         regInstallationHandler.createAllGroups(commit);
         regInstallationHandler.setAllGroupsAndAllRightsByUser(adminUser, commit);
 
         if (adminUser != null) {
             HttpSession session = request.getSession();
-
             session.setAttribute(BaseConstants.KEY_SESSION_USER, adminUser);
+            Configuration.getInstance().getLogger().debug("Set user " + adminUser + " as an attribute on the session");
         }
 
         return adminUser;

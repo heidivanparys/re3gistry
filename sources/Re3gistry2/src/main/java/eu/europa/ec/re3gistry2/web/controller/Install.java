@@ -44,6 +44,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
 import org.apache.logging.log4j.Logger;
 
 @WebServlet(WebConstants.PAGE_URINAME_INSTALL)
@@ -60,6 +61,7 @@ public class Install extends HttpServlet {
 
         //Init session
         HttpSession session = request.getSession();
+        Configuration.getInstance().getLogger().trace("Session id: " + session.getId());
 
         //Getting parameters
         String step = request.getParameter(BaseConstants.KEY_REQUEST_STEP);

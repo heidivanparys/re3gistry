@@ -210,12 +210,12 @@ public class Configuration {
             RegUser regUser = (RegUser) session.getAttribute(BaseConstants.KEY_SESSION_USER);
 
             if (regUser == null) {
-                Configuration.getInstance().getLogger().debug("Check user");
+                Configuration.getInstance().getLogger().trace("No " + BaseConstants.KEY_SESSION_USER + " found in the session, checking user");
                 regUser = UserHelper.checkUser(request);
             }
 
             if (regUser != null) {
-                Configuration.getInstance().getLogger().debug("User:" + regUser.getName());
+                Configuration.getInstance().getLogger().debug("User found using checkUser: " + regUser);
                 request.setAttribute(BaseConstants.KEY_REQUEST_REGUSER, regUser);
             } else {
                 Configuration.getInstance().getLogger().debug("No user found");
