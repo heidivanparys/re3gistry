@@ -159,7 +159,9 @@ public class Configuration {
     }
 
     public void initServlet(HttpServletRequest request, HttpServletResponse response, boolean fromInstall, boolean fromInstalling) throws ServletException, IOException {
-        Configuration.getInstance().getLogger().debug("Start initialising servlet");
+        HttpSession session = request.getSession();
+        Configuration.getInstance().getLogger().debug("Start initialising servlet; session id: " + session.getId());
+        
         //Check installation
 
         // If the system is installed and the user tries to access the 
@@ -177,26 +179,23 @@ public class Configuration {
           Configuration.getInstance().getLogger().trace("Redirecting to " + "." + WebConstants.PAGE_URINAME_INSTALL);
             response.sendRedirect("." + WebConstants.PAGE_URINAME_INSTALL);
         } else {
-            Configuration.getInstance().getLogger().debug("Proceed initialising servlet");
+            Configuration.getInstance().getLogger().trace("Proceed initialising servlet");
           
             //Init properties
-            Configuration.getInstance().getLogger().trace("Initialise properties");
             Properties prop = Configuration.getInstance().getProperties();
             request.setAttribute(BaseConstants.KEY_REQUEST_PROPERTIES, prop);
 
             //Init Localization
-            Configuration.getInstance().getLogger().trace("Initialise localisation");
             ResourceBundle loc = Configuration.getInstance().getLocalization();
             request.setAttribute(BaseConstants.KEY_REQUEST_LOCALIZATION, loc);
 
             //Init available languages in the session if needed
-            Configuration.getInstance().getLogger().trace("Initialise available languages in session if needed");
-            if (request.getSession().getAttribute(BaseConstants.KEY_SESSION_AVAILABLELANGUAGES) == null) {
+            if (session.getAttribute(BaseConstants.KEY_SESSION_AVAILABLELANGUAGES) == null) {
                 List<Localization> availableLanguages = new ArrayList<>(LocalizationMgr.getAvailableLanguages());
-                request.getSession().setAttribute(BaseConstants.KEY_SESSION_AVAILABLELANGUAGES, availableLanguages);
+                session.setAttribute(BaseConstants.KEY_SESSION_AVAILABLELANGUAGES, availableLanguages);
                 request.setAttribute(BaseConstants.KEY_SESSION_AVAILABLELANGUAGES, availableLanguages);
             } else {
-                request.setAttribute(BaseConstants.KEY_REQUEST_AVAILABLELANGUAGES, request.getSession().getAttribute(BaseConstants.KEY_SESSION_AVAILABLELANGUAGES));
+                request.setAttribute(BaseConstants.KEY_REQUEST_AVAILABLELANGUAGES, session.getAttribute(BaseConstants.KEY_SESSION_AVAILABLELANGUAGES));
             }
 
             String uri = request.getRequestURI();
@@ -204,7 +203,6 @@ public class Configuration {
             request.setAttribute(BaseConstants.KEY_REQUEST_CURRENTPAGENAME, currentPageName);
             Configuration.getInstance().getLogger().debug("Current page name=" + currentPageName);
 
-            HttpSession session = request.getSession();
 
             //Getting logged user
             RegUser regUser = (RegUser) session.getAttribute(BaseConstants.KEY_SESSION_USER);
@@ -215,10 +213,10 @@ public class Configuration {
             }
 
             if (regUser != null) {
-                Configuration.getInstance().getLogger().debug("User found using checkUser: " + regUser);
+                Configuration.getInstance().getLogger().trace("User found using checkUser: " + regUser);
                 request.setAttribute(BaseConstants.KEY_REQUEST_REGUSER, regUser);
             } else {
-                Configuration.getInstance().getLogger().debug("No user found");
+                Configuration.getInstance().getLogger().trace("No user found");
                 if (!fromInstall && !fromInstalling) {
                     request.setAttribute(BaseConstants.KEY_REQUEST_REGUSER, null);
                     //request.getRequestDispatcher("/jsp/login.jsp").forward(request, response);

@@ -61,7 +61,6 @@ public class Install extends HttpServlet {
 
         //Init session
         HttpSession session = request.getSession();
-        Configuration.getInstance().getLogger().trace("Session id: " + session.getId());
 
         //Getting parameters
         String step = request.getParameter(BaseConstants.KEY_REQUEST_STEP);
