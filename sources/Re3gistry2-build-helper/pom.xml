@@ -66,6 +66,7 @@
                 <mail.user></mail.user>
                 <mail.password></mail.password>
                 <mail.sender>sender@example.eu</mail.sender>
+                <web.session.cookie.secure>true</web.session.cookie.secure>
             </properties>
         </profile>        
         <!-- Server profile -->
@@ -88,6 +89,7 @@
                 <mail.user></mail.user>
                 <mail.password></mail.password>
                 <mail.sender>sender@example.eu</mail.sender>
+                <web.session.cookie.secure>true</web.session.cookie.secure>
             </properties>
         </profile>     
     </profiles>
