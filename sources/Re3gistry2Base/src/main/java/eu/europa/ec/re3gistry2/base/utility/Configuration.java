@@ -115,8 +115,12 @@ public class Configuration {
             String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
 
             File f = new File(propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SYSTEMINSTALLED);
+            logger.trace("Checking for existence of file " + f.getAbsolutePath());
             if (f.exists() && !f.isDirectory()) {
                 installed = true;
+                logger.trace("The system has been installed");
+            } else {
+              logger.trace("The system has not yet been installed");
             }
 
         } catch (Exception e) {
