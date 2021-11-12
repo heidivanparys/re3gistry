@@ -85,6 +85,7 @@ public class ItemListLoaderServlet extends HttpServlet {
         try {
             showSystemRegisters = Boolean.valueOf((String) properties.getProperty("application.systemregisters.show"));
         } catch (Exception e) {
+          Configuration.getInstance().getLogger().error(e.getMessage(), e);
         }
 
         // Gatering parameters
@@ -154,6 +155,7 @@ public class ItemListLoaderServlet extends HttpServlet {
             try {
                 regLanguagecode = regLanguagecodeManager.get(languageUUID);
             } catch (Exception e) {
+                Configuration.getInstance().getLogger().debug("Ignoring error " +  e.getMessage() + ", use the master langage in case the current language is not available.");
                 regLanguagecode = masterLanguage;
             }
         } else {
@@ -173,20 +175,26 @@ public class ItemListLoaderServlet extends HttpServlet {
         if (!regItemclasses.isEmpty()) {
 
             if (searchValue != null && !searchValue.isEmpty()) {
+                
                 containedRegItems = new ArrayList<>();
 
                 // This is a search request
+                Configuration.getInstance().getLogger().trace("Search request for value " + searchValue);
                 final SolrDocumentList documents = SolrHandler.performSearch(searchValue, regItem, regLanguagecode, start, length);
                 if (documents != null) {
                     totalCount = (int) documents.getNumFound();
+                    Configuration.getInstance().getLogger().trace(totalCount + " results found ");
                     for (SolrDocument document : documents) {
                         String regItemUuid = (String) document.getFieldValue(BaseConstants.KEY_PROPERTY_SOLR_DOCUMENT_ID);
                         try {
                             RegItem tmp = regItemManager.get(regItemUuid);
                             containedRegItems.add(tmp);
                         } catch (Exception e) {
+                            Configuration.getInstance().getLogger().error(e.getMessage(), e);
                         }
                     }
+                } else {
+                  Configuration.getInstance().getLogger().trace("No results found");
                 }
 
             } else if (regItem.getRegItemclass().getRegItemclasstype().getLocalid().equals(BaseConstants.KEY_ITEMCLASS_TYPE_ITEM)) {
@@ -224,7 +232,7 @@ public class ItemListLoaderServlet extends HttpServlet {
                             tmpRegLocalozations = regLocalizationManager.getAll(label, tmpRegItem, masterLanguage);
                         }
                     } catch (NoResultException e) {
-                        // Getting the localizations in the master langage in case the current language is not available
+                        Configuration.getInstance().getLogger().info("Ignoring error " +  e.getMessage() + ", get the localizations in the master langage in case the current language is not available.");
                         tmpRegLocalozations = regLocalizationManager.getAll(label, tmpRegItem, masterLanguage);
                     }
                     if (i != 0) {
@@ -475,12 +483,14 @@ public class ItemListLoaderServlet extends HttpServlet {
                                     try {
                                         regStatusLocalizationProposedItem = regStatuslocalizationManager.get(regStatusProposedItem, regLanguagecode);
                                     } catch (NoResultException e) {
+                                        Configuration.getInstance().getLogger().debug("Ignoring error " +  e.getMessage() + ", use the master langage in case the current language is not available.");
                                         regStatusLocalizationProposedItem = regStatuslocalizationManager.get(regStatusProposedItem, masterLanguage);
                                     }
 
                                     regItemproposedStatus = " / " + regStatusLocalizationProposedItem.getLabel();
 
                                 } catch (NoResultException e) {
+                                  Configuration.getInstance().getLogger().debug("Ignoring error " +  e.getMessage());
                                 }
 
                                 //Getting the RegStatus localization
@@ -488,6 +498,7 @@ public class ItemListLoaderServlet extends HttpServlet {
                                 try {
                                     regStatusLocalization = regStatuslocalizationManager.get(regStatus, regLanguagecode);
                                 } catch (NoResultException e) {
+                                    Configuration.getInstance().getLogger().debug("Ignoring error " +  e.getMessage() + ", use the master langage in case the current language is not available.");
                                     regStatusLocalization = regStatuslocalizationManager.get(regStatus, masterLanguage);
                                 }
 
@@ -504,6 +515,7 @@ public class ItemListLoaderServlet extends HttpServlet {
                                         throw new NoResultException();
                                     }
                                 } catch (NoResultException e) {
+                                    Configuration.getInstance().getLogger().debug("Ignoring error " +  e.getMessage() + ", use the master langage in case the current language is not available.");
                                     if (tmpRegFieldmapping.getRegField().getIstitle()) {
                                         languageNotAvailable = true;
                                     }
@@ -542,6 +554,7 @@ public class ItemListLoaderServlet extends HttpServlet {
                                             try {
                                                 regLocalizationTmps = regLocalizationManager.getAll(regFieldManager.getTitleRegField(), regRelation.getRegItemObject(), regLanguagecode);
                                             } catch (NoResultException e) {
+                                              Configuration.getInstance().getLogger().debug("Ignoring error " +  e.getMessage() + ", use the master langage in case the current language is not available.");
                                                 regLocalizationTmps = regLocalizationManager.getAll(regFieldManager.getTitleRegField(), regRelation.getRegItemObject(), masterLanguage);
                                             }
 
@@ -563,6 +576,7 @@ public class ItemListLoaderServlet extends HttpServlet {
                                                     try {
                                                         regLocalizationTmps = regLocalizationManager.getAll(regFieldManager.getTitleRegField(), regRelation.getRegItemObject(), regLanguagecode);
                                                     } catch (NoResultException e) {
+                                                        Configuration.getInstance().getLogger().debug("Ignoring error " +  e.getMessage() + ", use the master langage in case the current language is not available.");
                                                         regLocalizationTmps = regLocalizationManager.getAll(regFieldManager.getTitleRegField(), regRelation.getRegItemObject(), masterLanguage);
                                                     }
                                                        

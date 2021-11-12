@@ -45,10 +45,12 @@ import eu.europa.ec.re3gistry2.model.RegRelationpredicate;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import javax.persistence.EntityManager;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -163,7 +165,8 @@ public class SolrHandler {
 
             // Checking if Solr is active in the system
             if (!isSolrActive.equals(BaseConstants.KEY_BOOLEAN_STRING_TRUE) || solrUrl == null || solrUrl.length() == 0 || solrCoreFields == null || solrCoreFields.length() == 0) {
-                return null;
+              logger.info("Solr is not active in the system");
+              return null;
             }
 
             // Returning the SolrClient
@@ -173,7 +176,7 @@ public class SolrHandler {
                     .build();
 
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("No Solr client: " + e.getMessage(), e);
             return null;
         }
     }
@@ -268,7 +271,7 @@ public class SolrHandler {
                 collectionlocalid = regItemCollection.getLocalid();
                 collectionItemclasslocalid = regItemCollection.getRegItemclass().getLocalid();
             } catch (Exception e) {
-                // The item doesn't have a collection
+                Configuration.getInstance().getLogger().trace("Ignoring error " + e.getMessage() + ", the item doesn't have a collection");
             }
 
             // Getting regItem's child itemclass
@@ -307,10 +310,13 @@ public class SolrHandler {
                 }
             }
 
-            query.addFilterQuery(filterQueries.toArray(new String[query.size()]));
+            String[] filterQueriesAsArray = filterQueries.toArray(new String[query.size()]);
+            Configuration.getInstance().getLogger().debug("Filter queries: " + Arrays.toString(filterQueriesAsArray));
+            query.addFilterQuery(filterQueriesAsArray);
             query.setFields(BaseConstants.KEY_PROPERTY_SOLR_QUERY_FL);
             query.setStart(0);
 
+            Configuration.getInstance().getLogger().debug("Solr query: " + query.getQuery());
             final QueryResponse response = solrClient.query(query);
             final SolrDocumentList documents = response.getResults();
 
@@ -441,7 +447,7 @@ public class SolrHandler {
             document.setField(BaseConstants.KEY_SOLR_ITEM_COLLECTIONLOCALID, collectionlocalid);
             document.setField(BaseConstants.KEY_SOLR_ITEM_COLLECTIONITEMCLASSLOCALID, collectionItemclasslocalid);
         } catch (Exception e) {
-            // The item doesn't have a collection
+            Configuration.getInstance().getLogger().trace("Ignoring error " + e.getMessage() + ", the item doesn't have a collection");
         }
 
         // Setting the item's URI
@@ -531,50 +537,54 @@ public class SolrHandler {
 
     public static boolean checkSolrCompleteIndexinglRunning() {
         boolean running = false;
+        File f;
+        String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
+        f = new File(propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING);
+        Configuration.getInstance().getLogger().trace("Checking for existence of file " + f.getAbsolutePath());
         try {
-            String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
-
-            File f = new File(propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING);
             if (f.exists() && !f.isDirectory()) {
                 running = true;
             }
 
         } catch (Exception e) {
+          Configuration.getInstance().getLogger().error("Error during checking of " + f.getAbsolutePath() + ": " + e.getMessage(), e);
         }
         return running;
     }
 
     private static void createSolrCompleteIndexinglRunningFile() throws Exception {
         String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
-        String systemInstalledPath = propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING;
-        File systemInstalledFile = new File(systemInstalledPath);
-
-        systemInstalledFile.getParentFile().mkdirs();
+        String solrCompleteIndexingRunningPath = propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING;
+        Configuration.getInstance().getLogger().trace("Creating file " + solrCompleteIndexingRunningPath);
+        File solrCompleteIndexingRunningFile = new File(solrCompleteIndexingRunningPath);
+        solrCompleteIndexingRunningFile.getParentFile().mkdirs();
         try {
 
-            boolean success = systemInstalledFile.createNewFile();
+            boolean success = solrCompleteIndexingRunningFile.createNewFile();
 
             if (!success) {
-                //throw new IOException();
+              Configuration.getInstance().getLogger().error("Could not create file " + solrCompleteIndexingRunningFile);
             }
 
         } catch (IOException ex) {
+            Configuration.getInstance().getLogger().error("Could not create file " + solrCompleteIndexingRunningFile + ": " + ex.getMessage(), ex);
         }
     }
 
     private static void deleteSolrCompleteIndexinglRunningFile() {
         String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
-        String systemInstalledPath = propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING;
-
+        String solrCompleteIndexingRunningFile = propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING;
+        Configuration.getInstance().getLogger().trace("Deleting file " + solrCompleteIndexingRunningFile);
         try {
-            File file = new File(systemInstalledPath);
+            File file = new File(solrCompleteIndexingRunningFile);
 
             boolean success = file.delete();
 
             if (!success) {
-                //throw new IOException();
+              Configuration.getInstance().getLogger().error("Could not delete file " + solrCompleteIndexingRunningFile);
             }
         } catch (Exception ex) {
+          Configuration.getInstance().getLogger().error("Could not delete file " + solrCompleteIndexingRunningFile + ": " + ex.getMessage(), ex);
         }
     }
 }
