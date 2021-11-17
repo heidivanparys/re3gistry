@@ -538,8 +538,7 @@ public class SolrHandler {
     public static boolean checkSolrCompleteIndexinglRunning() {
         boolean running = false;
         File f;
-        String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
-        f = new File(propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING);
+        f = new File(Configuration.getInstance().getPathHelperFiles() + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING);
         Configuration.getInstance().getLogger().trace("Checking for existence of file " + f.getAbsolutePath());
         try {
             if (f.exists() && !f.isDirectory()) {
@@ -553,8 +552,7 @@ public class SolrHandler {
     }
 
     private static void createSolrCompleteIndexinglRunningFile() throws Exception {
-        String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
-        String solrCompleteIndexingRunningPath = propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING;
+        String solrCompleteIndexingRunningPath = Configuration.getPathHelperFiles() + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING;
         Configuration.getInstance().getLogger().trace("Creating file " + solrCompleteIndexingRunningPath);
         File solrCompleteIndexingRunningFile = new File(solrCompleteIndexingRunningPath);
         solrCompleteIndexingRunningFile.getParentFile().mkdirs();
@@ -572,8 +570,7 @@ public class SolrHandler {
     }
 
     private static void deleteSolrCompleteIndexinglRunningFile() {
-        String propertiesPath = System.getProperty(BaseConstants.KEY_FOLDER_NAME_CONFIGURATIONS);
-        String solrCompleteIndexingRunningFile = propertiesPath + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING;
+        String solrCompleteIndexingRunningFile = Configuration.getPathHelperFiles() + File.separator + BaseConstants.KEY_FILE_NAME_SOLR_COMPLETE_INDEXING_RUNNING;
         Configuration.getInstance().getLogger().trace("Deleting file " + solrCompleteIndexingRunningFile);
         try {
             File file = new File(solrCompleteIndexingRunningFile);
