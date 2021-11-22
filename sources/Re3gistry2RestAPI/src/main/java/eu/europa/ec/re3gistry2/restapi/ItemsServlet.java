@@ -67,28 +67,34 @@ public class ItemsServlet extends HttpServlet {
     private static EntityManagerFactory emf;
     private static ItemCache cache;
     private static Map<String, Formatter> formatters;
-
+    
     @Override
     public void init(ServletConfig config) throws ServletException {
         try {
-            this.emf = PersistenceFactory.getEntityManagerFactory();
-            this.cache = (ItemCache) config.getServletContext().getAttribute(CacheServlet.ATTRIBUTE_CACHE_KEY);
-            this.formatters = new HashMap<>();
-
-            addFormatter(new JSONInternalFormatter());
-            addFormatter(new XMLFormatter());
-            addFormatter(new JSONFormatter());
-            addFormatter(new ISO19135Formatter());
-            addFormatter(new RDFFormatter());
-            addFormatter(new CSVFormatter(emf));
-            addFormatter(new RORFormatter());
+            synchronized (ItemsServlet.class) {
+              if (ItemsServlet.emf == null) { // then the other two will also be null
+                ItemsServlet.emf = PersistenceFactory.getEntityManagerFactory();
+                ItemsServlet.cache = (ItemCache) config.getServletContext().getAttribute(CacheServlet.ATTRIBUTE_CACHE_KEY);
+                ItemsServlet.formatters = new HashMap<>();
+                
+                addFormatter(new JSONInternalFormatter());
+                addFormatter(new XMLFormatter());
+                addFormatter(new JSONFormatter());
+                addFormatter(new ISO19135Formatter());
+                addFormatter(new RDFFormatter());
+                addFormatter(new CSVFormatter(emf));
+                addFormatter(new RORFormatter());
+                
+                LOG.trace("Set up entity manager factory, cache and " + formatters.size() + " formatters");
+              }
+            }
         } catch (Exception e) {
             LOG.error("Unexpected exception occured: cannot load the configuration system", e);
         }
     }
 
     private void addFormatter(Formatter formatter) {
-        formatters.put(formatter.getFormatName(), formatter);
+      ItemsServlet.formatters.put(formatter.getFormatName(), formatter);
     }
 
     @Override
@@ -96,13 +102,24 @@ public class ItemsServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             String path = req.getPathInfo();
+            LOG.trace("Path info = " + (path == null ? "null" : path));
             String lang = RequestUtil.getParamTrimmed(req, "lang", null);
+            LOG.trace("Param lang = " + (lang == null ? "null" : lang));
             String uuid = RequestUtil.getParamTrimmed(req, "uuid", null);
+            LOG.trace("Param uuid = " + (uuid == null ? "null" : uuid));
             String uri = RequestUtil.getParamTrimmed(req, "uri", null);
+            LOG.trace("Param uri = " + (uri == null ? "null" : uri));
             String format = RequestUtil.getParamTrimmed(req, "format", null);
+            LOG.trace("Param format = " + (format == null ? "null" : format));
             uri = removeTrailingSlashes(uri);
 
-            if (uri != null) {
+            /* 
+             * HV: the next lines of code really seem to be unnecessary?
+             * If the local id is present twice in the URI then that is a mistake?
+             * The next lines actually give problems when by coincidence, the string formed
+             * by the localid is also present in the host name (could be an IP address).
+             */
+            /*if (uri != null) {
                 int slash = uri.lastIndexOf('/');
                 String localid = uri.substring(slash + 1);
                 int count = countOccurance(uri, localid);
@@ -111,7 +128,8 @@ public class ItemsServlet extends HttpServlet {
                     int start = uri.lastIndexOf(localid);
                     uri = uri.substring(0, start - 1);
                 }
-            }
+            }*/
+            LOG.trace("Param uri adjusted = " + (uri == null ? "null" : uri));
 
             Predicate<Item> typeFilter = getTypeFilter(path);
             Formatter formatter = formatters.get(format);
@@ -293,6 +311,7 @@ public class ItemsServlet extends HttpServlet {
     }
 
     private Optional<Item> getItemByUuid(String uuid, String language, ItemSupplier itemSupplier) throws Exception {
+        LOG.debug("Trying to find item by uuid: " + uuid + " (language=" + language + ")");
         Item cached = cache.getByUuid(language, uuid);
         if (cached != null) {
             return Optional.of(cached);
@@ -307,6 +326,7 @@ public class ItemsServlet extends HttpServlet {
     }
 
     private Optional<Item> getItemByUri(String uri, String language, ItemSupplier itemSupplier) throws Exception {
+        LOG.debug("Trying to find item by uri: " + uri + " (language=" + language + ")");
         Item cached = cache.getByUrl(language, uri);
         if (cached != null) {
             return Optional.of(cached);
@@ -325,6 +345,7 @@ public class ItemsServlet extends HttpServlet {
     }
 
     private Optional<Item> getItemHistoryByUuid(String uuid, String language, ItemHistorySupplier itemHistorySupplier) throws Exception {
+        LOG.debug("Trying to find item history by uuid: " + uuid + " (language=" + language + ")");
         Item cached = cache.getByUuid(language, uuid);
         if (cached != null) {
             return Optional.of(cached);
@@ -339,6 +360,7 @@ public class ItemsServlet extends HttpServlet {
     }
 
     private Optional<Item> getItemHistoryByUri(String uri, Integer version, String language, ItemHistorySupplier itemHistorySupplier) throws Exception {
+        LOG.debug("Trying to find item history by uri: " + uri + " (language=" + language + ")");
         Item cached = cache.getByUrl(language, uri);
         if (cached != null) {
             return Optional.of(cached);
